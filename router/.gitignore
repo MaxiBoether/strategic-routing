@@ -1,0 +1,9 @@
+deps/
+*.o
+*.swp
+*.xml
+
+router
+xmlbuild
+pareto
+perf.data*
