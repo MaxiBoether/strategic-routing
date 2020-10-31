@@ -23,9 +23,10 @@ Used libraries are found in `lib`. When building, you can find the results in
 
 Please note that due to historic reasons, the naming of problems/algorithms in
 the sourcecode differs to the naming in the paper. `SSOTD` maps to the `SAP`
-problem in general. The `fulldisjoint` variant maps to `D-SAP`, the `nodisjoint`
-variant maps to `SAP`, and the `onedisjoint` variant maps to `1D-SAP`. The `new`
-prefix on the variants indicates the fewer criteria variants (´FC`).
+problem in general. The `fulldisjoint` variant maps to `D-SAP`, the
+`newnodisjoint` variant maps to `SAP`, and the `newonedisjoint` variant maps to
+`1D-SAP`. If the `new` prefix on the variants is missing, that indicates the
+fewer criteria variants (´FC`).
 
 In the SAP implementations, you will find several optimization techniques not
 yet described in any paper. We plan to publish the proofs of correctness in the
