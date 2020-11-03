@@ -21,25 +21,20 @@ class link {
         double length, capacity, freespeed;
         double b();
         double a();
-        double taud();
-        double latency(double x);
+        double taud(); //The time spend on the link per agent if all d agents use the link.
+        double latency(double x); //The time spend on the link per agent if there are x * d agents on the link.
 };
 
 class route {
 private:
     double _a, _b;
-	// std::vector<double> A;
-	// std::vector<double> B;
     void initByNodeVec(std::vector<int>& nodeVec);
 public:
     std::vector<link*> links; // TODO prevent unauthorized modification
     double a() const;
     double b() const;
-	// double a(int i, int j);
-	// double b(int i, int j);
     route() = default;
     double length();
-    // double latency(double x);
     void calculate_params();
     route operator+(const route& b);
     explicit route(route& source, link* l);

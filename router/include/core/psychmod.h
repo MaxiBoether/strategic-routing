@@ -11,7 +11,7 @@ class psychmod {
   virtual double a(link& l) = 0;
   virtual double latency(double a, double b, double x) = 0;
   virtual vector<double> calc_usage(double ap, double bp, double aq, double bq, double apnq,
-                                    double bpnq, int k) = 0;
+                                    double bpnq, int k) = 0; //apnq and bpnq refer tp the parameters a and b of the shared edges of p and q while the others refer to the whole paths p and q
   virtual bool dominating(shared_ptr<ParetoElement> par1, shared_ptr<ParetoElement> par2) = 0;
   virtual bool strongly_dominating(shared_ptr<ParetoElement> par1, shared_ptr<ParetoElement> par2) = 0;
   pair<double, int> score_route(route& p, route& q, int k);
@@ -32,47 +32,14 @@ class linear_simple_example_model_2r : public psychmod {
   virtual bool strongly_dominating(shared_ptr<ParetoElement> par1, shared_ptr<ParetoElement> par2);
 };
 
-class augmented_linear_example_model_2r : public linear_simple_example_model_2r {
- public:
-  virtual vector<double> calc_usage(double ap, double bp, double aq, double bq, double apnq,
-                                    double bpnq, int k);
-  // virtual bool strongly_dominating(shared_ptr<ParetoElement> par1, shared_ptr<ParetoElement> par2);
-};
-
-// class linear_simple_example_model_4r : public psychmod {
-//  public:
-//   virtual double b(link& l);
-//   virtual double a(link& l);
-//   virtual double latency(double a, double b, double x);
-//   virtual vector<double> calc_usage(double ap, double bp, double aq, double bq, double apnq,
-//                                     double bpnq, int k);
-//   virtual bool strongly_dominating(shared_ptr<ParetoElement> par1, shared_ptr<ParetoElement> par2);
-// };
-
-// class augmented_linear_example_model_4r : public linear_simple_example_model_4r {
-//  public:
-//   virtual vector<double> calc_usage(double ap, double bp, double aq, double bq, double apnq,
-//                                     double bpnq, int k);
-//   virtual bool strongly_dominating(shared_ptr<ParetoElement> par1, shared_ptr<ParetoElement> par2);
-// };
-
 class user_equilibrium_2r : public linear_simple_example_model_2r {
  public:
   virtual vector<double> calc_usage(double ap, double bp, double aq, double bq, double apnq,
                                     double bpnq, int k);
-  // virtual bool strongly_dominating(shared_ptr<ParetoElement> par1, shared_ptr<ParetoElement> par2);
 };
-
-// class user_equilibrium_4r : public linear_simple_example_model_4r {
-//  public:
-//   virtual vector<double> calc_usage(double ap, double bp, double aq, double bq, double apnq,
-//                                     double bpnq, int k);
-//   virtual bool strongly_dominating(shared_ptr<ParetoElement> par1, shared_ptr<ParetoElement> par2);
-// };
 
 class system_optimum_2r : public linear_simple_example_model_2r {
  public:
   virtual vector<double> calc_usage(double ap, double bp, double aq, double bq, double apnq,
                                     double bpnq, int k);
-  // virtual bool strongly_dominating(shared_ptr<ParetoElement> par1, shared_ptr<ParetoElement> par2);
 };

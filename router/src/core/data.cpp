@@ -14,7 +14,11 @@
 
 #include "core/globals.h"
 #include "core/io.h"
-
+// To pull best routes from the queue first, adjust this value such that it fits your input data.
+// Let mean_a and mean_b refer to the mean of the parameters over all edges in your graph. 
+// Then set WEIGHT_A to mean_b/mean_a
+#define WEIGHT_A 20000
+ 
 using namespace tinyxml2;
 
 person::person(int _origin, int _destination, const char* _timestr, XMLElement* _element)
@@ -70,39 +74,12 @@ double route::a() const { return _a; }
 
 double route::b() const { return _b; }
 
-// double route::a(int i, int j) {
-//   if (A.size() == 0) {
-//     A.resize(links.size() + 1);
-//     A[0] = 0;
-//     for (size_t k = 1; k < links.size() + 1; k++) {
-//       A[k] = A[k - 1] + links[k - 1]->a();
-//     }
-//   }
-//   return A[j + 1] - A[i];
-// }
-// double route::b(int i, int j) {
-//   if (B.size() == 0) {
-//     B.resize(links.size() + 1);
-//     B[0] = 0;
-//     for (size_t k = 1; k < links.size() + 1; k++) {
-//       B[k] = B[k - 1] + links[k - 1]->b();
-//     }
-//   }
-//   return B[j + 1] - B[i];
-// }
-
 double route::length() {
   double length = 0;
   for (link* l : links)
     length += l->length;
   return length;
 }
-// double route::latency(double x) {
-//   double latency = 0;
-//   for (link* l : links)
-//     latency += l->latency(x);
-//   return latency;
-// }
 
 route route::operator+(const route& b) {
   std::vector<link*> new_links;
@@ -154,14 +131,14 @@ void route::initByNodeVec(std::vector<int>& nodeVec) {
           links.push_back(l);
           found = 1;
         } else {
-          std::cout << "sh*t, there's another option from " << node << " to " << nextNode
+          std::cout << "Warning, there's another option from " << node << " to " << nextNode
                     << " while constructing route." << std::endl;
           links[links.size() - 1] = l;
         }
       }
     }
     if (!found) {
-      std::cout << "HOLY SH*T THE HOUSE IS ON FIRE!" << std::endl;
+      std::cout << "WARNING!" << std::endl;
       std::cout << "Could not find outgoing edge from " << node << " to " << nextNode
                 << " while constructing route." << std::endl;
     }
@@ -227,8 +204,7 @@ double route::compareTo(route& other) {
 }
 
 double ParetoElement::k() const {
-  // TODO modify this balance (PARAMETER)
-  return a() * 15207 + b();
+  return a() * WEIGHT_A + b();
 }
 ParetoElement::ParetoElement(shared_ptr<ParetoElement> par, link* l) {
   parent = par;

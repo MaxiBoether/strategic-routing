@@ -23,9 +23,8 @@ using namespace std;
 
 int number_agents;
 
-static double mean_a = 0.0026179770605695984;
-static double mean_b = 39.811862162760164;
-
+#define mean_a 0.002  //The average a over all edges
+#define mean_b 40     // The average b over all edges
 
 vector<double> bestAs, bestBs, bestAsForward, bestBsForward; // For dijkstra & airline local opt
 
@@ -67,7 +66,7 @@ shared_ptr<route> dijkstra(int a, int b, shared_ptr<route> original_route) {
     }
   }
   if (prec[b].first == -1) {
-    cerr << "HOLY SH*T THE HOUSE IS ON FIRE" << endl;
+    cerr << "WARNING!" << endl;
     cerr << "(djikstra) could not find any route from " << a << " to " << b << endl;
     exit(1);
   }
@@ -111,36 +110,11 @@ bool standard_prio(pair<shared_ptr<ParetoElement>, int> left, pair<shared_ptr<Pa
   return right.first->k() < left.first->k();
 }
 
-bool astar_prio_dijkstra2(pair<shared_ptr<ParetoElement>, int> left, pair<shared_ptr<ParetoElement>, int> right) {
-  double leftTaud = (left.first->taud() + psychological_model.latency(bestAs[left.second], bestBs[left.second], number_agents)) / mean_taud;
-  double leftB = (left.first->b() + bestBs[left.second]) / mean_b;
-  double rightTaud = (right.first->taud() + psychological_model.latency(bestAs[right.second], bestBs[right.second], number_agents)) / mean_taud;
-  double rightB = (right.first->b() + bestBs[right.second]) / mean_b;
-  return leftTaud + leftB + left.first->shared_a() * 2 > rightTaud + rightB + right.first->shared_a() * 2;
-}
-
 bool astar_prio_dijkstra(pair<shared_ptr<ParetoElement>, int> left, pair<shared_ptr<ParetoElement>, int> right) {
   double leftA = left.first->a() + bestAs[left.second];
   double leftB = left.first->b() + bestBs[left.second];
   double rightA = right.first->a() + bestAs[right.second];
   double rightB = right.first->b() + bestBs[right.second];
-  return psychological_model.score_route(leftA, leftB, orig_path->a(), orig_path->b(), left.first->shared_a(), left.first->shared_b(), number_agents) > 
-  psychological_model.score_route(rightA, rightB, orig_path->a(), orig_path->b(), right.first->shared_a(), right.first->shared_b(), number_agents);
-}
-
-bool astar_prio_airline2(pair<shared_ptr<ParetoElement>, int> left, pair<shared_ptr<ParetoElement>, int> right) {
-  (void) left;
-  (void) right;
- return false;
-}
-
-bool astar_prio_airline(pair<shared_ptr<ParetoElement>, int> left, pair<shared_ptr<ParetoElement>, int> right) {
-  auto [leftA, leftB] = get_lazy_airval(left.second, to_node);
-  leftA += left.first->a();
-  leftB += left.first->b();
-  auto [rightA, rightB] = get_lazy_airval(right.second, to_node);
-  rightA += right.first->a();
-  rightB += right.first->b();
   return psychological_model.score_route(leftA, leftB, orig_path->a(), orig_path->b(), left.first->shared_a(), left.first->shared_b(), number_agents) > 
   psychological_model.score_route(rightA, rightB, orig_path->a(), orig_path->b(), right.first->shared_a(), right.first->shared_b(), number_agents);
 }
@@ -181,8 +155,6 @@ pair<double, ll> pareto_dijkstra_local_opt(int a, int from, int to, vector<vecto
     visits++;
     auto [par, u] = q.top();
     q.pop();
-    // if (qot < min_score(u, to, par, k))  //Does not work!  + Remove if not used with A*-prio ordered by score_route value !!!!!!!!!!
-    //   break;
     for (link* l : adj[u]) {
       if (can_ignore(par,l) || inactive[l->id])
         continue;
@@ -237,8 +209,6 @@ orig_path = original_route;
     visits++;
     auto [par, u] = q.top();
     q.pop();
-    // if (qot < min_score(u, to, par, k))  //Does not work!  + Remove if not used with A*-prio ordered by score_route value !!!!!!!!!!
-    //   break;
     for (link* l : adj[u]) {
       if (can_ignore(par,l))
 	  continue;
@@ -295,8 +265,6 @@ orig_path = original_route;
     visits++;
     auto [par, u] = q.top();
     q.pop();
-    // if (qot < min_score(u, to, par, k))  //Does not work!  + Remove if not used with A*-prio ordered by score_route value !!!!!!!!!!
-    //   break;
     for (link* l : adj[u]) {
       if (can_ignore(par,l) || (par->hasSplit && !is_orig_edge[l->id]))
         continue;
@@ -461,47 +429,6 @@ orig_path = original_route;
   }
 }
 
-double airline_dist(int from, int to) {
-  double fromX = atof(nodes[from]->x);
-  double fromY = atof(nodes[from]->y);
-  double toX = atof(nodes[to]->x);
-  double toY = atof(nodes[to]->y);
-  return sqrt((fromX - toX) * (fromX - toX) + (fromY - toY) * (fromY - toY));
-}
-
-link* artificial_link(int from, int to, double freespeed, double capacity) {
-  link* l = new link;
-  l->id = -77;
-  l->from = from;
-  l->to = to;
-  l->length = airline_dist(from, to);
-  l->capacity = capacity;
-  l->freespeed = freespeed;
-  return l;
-}
-
-pair<double, double> get_lazy_airval(int node, int to) {
-  double b = bestBs[node];
-  
-  if (b == 0) {
-    link* art_link = artificial_link(node, to, 130, 2288);
-    bestAs[node] = art_link->a();
-    bestBs[node] = art_link->b();
-  }
-  return make_pair(bestAs[node], bestBs[node]);
-}
-
-pair<double, double> get_lazy_airval_forward(int node, int from) {
-  double b = bestBsForward[node];
-  
-  if (b == 0) {
-    link* art_link = artificial_link(from, node, 130, 2288);
-    bestAsForward[node] = art_link->a();
-    bestBsForward[node] = art_link->b();
-  }
-  return make_pair(bestAsForward[node], bestBsForward[node]);
-}
-
 void fill_best_pars_dijkstra(int to, unordered_map<int, bool> inactive) {
   std::vector<std::vector<link*>> adj_inv(adj.size());
   for (unsigned int i=0; i<adj.size(); i++) {
@@ -570,7 +497,7 @@ void check_route_sanity(route& r, string routeName) {
   int last_node = r.links[0]->from;
   for (link* l : r.links) {
     if (l->from != last_node) {
-      std::cout << "invalid route " << routeName << ". HIER KOMMT DIE ROUTENPOLIZEI! "
+      std::cout << "invalid route " << routeName << ". "
                 << l->from << " " << last_node << std::endl;
     }
     last_node = l->to;
