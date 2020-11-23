@@ -8,18 +8,19 @@ remainder of this readme, we assume familiarity with the ATMOS paper.
 
 ## Project Structure
 
-The repository contains the outer framework as well as the implementation of our
-algorithms solving SAP. You find all implementation sourcecode in the `src`
-folder. The subdirectory `core` contains the core router part
-(framework), responsible for input/output/general datatypes. The other
+The repository contains the outer routing framework as well as the
+implementation of our algorithms solving the SAP problem. You find all
+implementations in the `src` folder. The subdirectory `core` contains the core
+router framework, responsible for input/output/general datatypes. The other
 subdirectores are for each routing submodule ("strategy"). In this repository,
-there only is the `ssotd` strategic, which maps to the SAP problem in the paper.
+you will only find the `ssotd` strategy, which solves the SAP problem.
 For example, we also implemented other evolutionary algorithms solving SAP,
 which define a different strategy. Strategies can have different variants (e.g.
-1D-SAP).
+1D-SAP). Hence, if you want to solve your own routing problem within this
+framework, start with adding a new strategy.
 
-Used libraries are found in `lib`. When building, you can find the results in
-`build`. All header files should be in `include`.
+All used libraries are found in `lib`. After compiling the project, you can find
+the results in `build`. All header files should be in `include`.
 
 Please note that due to historic reasons, the naming of problems/algorithms in
 the sourcecode differs to the naming in the paper. `SSOTD` maps to the `SAP`
@@ -35,11 +36,13 @@ journal version of the paper.
 ## Input and Output Data Format
 Due to historic reasons, we are using MATSim's graph and plan format. We refer
 to the MATSim user guide for details (https://www.matsim.org/docs/userguide/).
-Unfortunately, we cannot provide you with our graph representing on Berlin. The
-idea in the `plans.xml` file is that you can specify multiple persons with the
-same OD-pair (and starting time) to set how many people should be routed. SAP is
-solved for each OD-pair. The framework outputs a plans.xml that can be executed
-in the MATSim simulator.
+Unfortunately, we cannot provide you with our graph of Berlin. The idea of the
+`plans.xml` file is that you can specify multiple persons with the same OD-pair
+(and starting time) to set how many people should be routed. This is defined by
+an  MATSim plans file without any routes, just the OD-pair(s, each OD-pair
+repeated as often as your demand is). The strategy is applied for each OD-pair.
+The framework outputs a plans.xml with the calculated routes that can be
+executed in the MATSim simulator.
 
 This means you can validate your (and our) algorithms in simulation settings. We
 recommend Simunto Via for visulization. Unfortunately, we did not have the time
