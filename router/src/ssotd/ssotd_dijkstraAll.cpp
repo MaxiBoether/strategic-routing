@@ -52,7 +52,7 @@ shared_ptr<route> dijkstra_all(int a, int b, int k) {
     }
   }
   if (prec[b].first == -1) {
-    cerr << "HOLY SH*T THE HOUSE IS ON FIRE" << endl;
+    cerr << "WARNING!" << endl;
     cerr << "(djikstra) could not find any route from " << a << " to " << b << endl;
     exit(1);
   }

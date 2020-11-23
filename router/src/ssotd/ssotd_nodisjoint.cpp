@@ -32,7 +32,7 @@ using minq = priority_queue<T, vector<T>, greater<>>;
 
 #define MAX_ORIGINAL_ROUTE_NODES 1024
 
-
+// This file refers to the SAP-FC algorithm
 
 class RouteFragment {
  public:
@@ -72,8 +72,7 @@ class CompositeRouteFragment : public RouteFragment {
   double _sb = -1.0;
   double _staud = -1.0;
   vector<shared_ptr<RouteFragment>>
-      components;  // TODO try to replace with 2 explicit components (variables)
-                   // maybe this vector is just too much overhead
+      components;  
 
  public:
   CompositeRouteFragment(vector<shared_ptr<RouteFragment>>& fragments) {
@@ -168,29 +167,6 @@ class ParetoElementFragment : public RouteFragment {
   virtual double shared_taud() override { return 0.0; }
 };
 
-pair<double, double> lower_bound_score_zero(shared_ptr<ParetoElement> par, int from, int to, int c,
-                                            int v, shared_ptr<route> original_route, int k) {
-  (void) from;  (void) to;
-  auto score = psychological_model.score_route(par->a(), par->b(), original_route->a(),
-                                               original_route->b(), 0, 0, k);
-  if (score.second > 0)
-    return make_pair(score.first, score_for_relax(index_in_original(c), index_in_original(v), par, k));
-  return make_pair(HUGE_VAL, -1);
-}
-
-pair<double, double> lower_bound_score_airline(shared_ptr<ParetoElement> par, int from, int to,
-                                               int c, int v, shared_ptr<route> original_route, int k) {
-  auto [a, b] = get_lazy_airval(v, to);
-  auto [af, bf] = get_lazy_airval_forward(c, from);
-  
-  auto score = psychological_model.score_route(par->a() + a + af, par->b() + b + bf,
-                                               original_route->a(), original_route->b(), 0, 0, k);
-                               
-  if (score.second > 0)
-    return make_pair(score.first, score_for_relax(index_in_original(c), index_in_original(v), par, k));
-  return make_pair(HUGE_VAL, -1);
-}
-
 pair<double, double> lower_bound_score_dijkstra(shared_ptr<ParetoElement> par, int from, int to,
                                                 int c, int v, shared_ptr<route> original_route,
                                                 int k) {
@@ -242,69 +218,18 @@ pair<shared_ptr<route>, double> ssotd_route(int a, int b, shared_ptr<route> orig
   function<pair<double,int>(int, vector<vector<shared_ptr<ParetoElement>>>*)> pareto_dijk;
   double upperBound = qot;
 
-  if ("none" == optimization || "hop" == optimization) {
-    cout << "Doing no optimization" << endl;
-    pareto_dijk = [&inactive, &original_route, upperBound, b](int c, vector<vector<shared_ptr<ParetoElement>>>* pareto) {
-      auto vis = pareto_dijsktra(c, b, *pareto, original_route, inactive);
-      return make_pair(upperBound, vis);
-    };
-  } else if ("simple_local_opt" == optimization) {
-    cout << "Doing simple optimization" << endl;
-    pareto_dijk = [a, b, &original_route, k, &upperBound, &inactive](
-                      int c, vector<vector<shared_ptr<ParetoElement>>>* pareto) {
-      return pareto_dijkstra_local_opt(c, a, b, *pareto, original_route, k, upperBound, inactive, &lower_bound_score_zero);
-    };
-  } else if ("dijkstra_local_opt" == optimization) {
-    cout << "Doing dijkstra optimization" << endl;
-    auto start = chrono::steady_clock::now();
-    fill_best_pars_dijkstra(b);
-    fill_best_pars_dijkstra_forward(a);
-    auto end = chrono::steady_clock::now();
-    cout << "Route specific precalculation time: "
-         << chrono::duration_cast<chrono::microseconds>(end - start).count() << endl;
-    pareto_dijk = [a, b, &original_route, k, &upperBound, &inactive](
-                      int c, vector<vector<shared_ptr<ParetoElement>>>* pareto) {
-      return pareto_dijkstra_local_opt(c, a, b, *pareto, original_route, k, upperBound, inactive, &lower_bound_score_dijkstra);
-    };
-  } else if ("airline_local_opt" == optimization) {
-    cout << "Doing airline optimization" << endl;
-    cerr << "Assuming best freeflowspeed = 130 and best capacity = 2288 (sane-berlin.xml)!!!!"
-         << endl;
-    bestAs = vector<double>(nodes.size());
-    bestBs = vector<double>(nodes.size());
-    bestAsForward = vector<double>(nodes.size());
-    bestBsForward = vector<double>(nodes.size());
-    pareto_dijk = [a, b, &original_route, k, &upperBound, &inactive](
-                      int c, vector<vector<shared_ptr<ParetoElement>>>* pareto) {
-      return pareto_dijkstra_local_opt(c, a, b, *pareto, original_route, k, upperBound, inactive, &lower_bound_score_airline);
-    };
-   } else if ("airline_astar_opt" == optimization) {
-    cout << "Doing airline astar optimization" << endl;
-    cerr << "Assuming best freeflowspeed = 130 and best capacity = 2288 (sane-berlin.xml)!!!!"
-         << endl;
-    bestAs = vector<double>(nodes.size());
-    bestBs = vector<double>(nodes.size());
-    bestAsForward = vector<double>(nodes.size());
-    bestBsForward = vector<double>(nodes.size());
-    pareto_dijk = [a, b, &original_route, k, &upperBound, &inactive](
-                      int c, vector<vector<shared_ptr<ParetoElement>>>* pareto) {
-      return pareto_dijkstra_local_opt(c, a, b, *pareto, original_route, k, upperBound, inactive, &lower_bound_score_airline, &astar_prio_airline);
-    };
-  } else if ("dijkstra_astar_opt" == optimization) {
-     cout << "Doing dijkstra astar optimization" << endl;
-    auto start = chrono::steady_clock::now();
-    fill_best_pars_dijkstra(b);
-    fill_best_pars_dijkstra_forward(a);
-    auto end = chrono::steady_clock::now();
-    cout << "Route specific precalculation time: "
-         << chrono::duration_cast<chrono::microseconds>(end - start).count() << endl;
-    pareto_dijk = [a, b, &original_route, k, &upperBound, &inactive](
-                      int c, vector<vector<shared_ptr<ParetoElement>>>* pareto) {
-      return pareto_dijkstra_local_opt(c, a, b, *pareto, original_route, k, upperBound, inactive, &lower_bound_score_dijkstra, &astar_prio_dijkstra);
-    };
-  } else
-    cerr << "Invalid parameter for optimization given: " << optimization << endl;
-
+  cout << "Doing dijkstra astar optimization" << endl;
+  auto start = chrono::steady_clock::now();
+  fill_best_pars_dijkstra(b);
+  fill_best_pars_dijkstra_forward(a);
+  auto end = chrono::steady_clock::now();
+  cout << "Route specific precalculation time: "
+        << chrono::duration_cast<chrono::microseconds>(end - start).count() << endl;
+  pareto_dijk = [a, b, &original_route, k, &upperBound, &inactive](
+                    int c, vector<vector<shared_ptr<ParetoElement>>>* pareto) {
+    return pareto_dijkstra_local_opt(c, a, b, *pareto, original_route, k, upperBound, inactive, &lower_bound_score_dijkstra, &astar_prio_dijkstra);
+  };
+ 
   long long visits = 0;
   auto start = chrono::steady_clock::now();
 #pragma omp parallel for default(none) shared(paretoFronts, original_route, adj, inactive, upperBound, k, \
@@ -313,7 +238,6 @@ pair<shared_ptr<route>, double> ssotd_route(int a, int b, shared_ptr<route> orig
     // iterate over all vertices of the original route except the last
     int v = original_route->links[lid]->from;
     vector<vector<shared_ptr<ParetoElement>>> pareto(adj.size() + 1);
-    // vector<list<shared_ptr<ParetoElement>>> pareto(adj.size() +1);
     auto [newUpperbound, new_visits] = pareto_dijk(v, &pareto);
     visits += new_visits;
     if (newUpperbound < upperBound)
@@ -362,16 +286,6 @@ pair<shared_ptr<route>, double> ssotd_route(int a, int b, shared_ptr<route> orig
       }
     }
 
-    // // statistics recording
-    // for (auto& frag : A[i]) {
-    //   auto [ot, usage] = psychological_model.score_route(
-    //       frag->a(), frag->b(), origPartA[i], origPartB[i], frag->shared_a(), frag->shared_b(), k);
-    //   (void)usage;
-    //   // scale down ot by length
-    //   ot /= origTt[i];
-    //   statsCsv << i << "," << ot << "," << frag->b() / frag->a() << ","
-    //             << frag->shared_b() / frag->shared_a() << "\n";
-  // }
   }
   double best_ot = numeric_limits<double>::max();
   double best_usage = 0.0;

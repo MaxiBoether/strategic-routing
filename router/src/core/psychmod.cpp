@@ -144,77 +144,12 @@ vector<double> linear_simple_example_model_2r::calc_usage(double ap, double bp, 
   else if (x2 < 0)
     in_bounds.push_back(0);
   if (in_bounds.empty()) {
-    cerr << "HOLY SH*T THE HOUSE IS ON FIRE" << endl;
+    cerr << "WARNING!" << endl;
     cerr << "could not determine in-bound score for a pareto route" << endl;
     return {0.0f};
   }
   return in_bounds;
 }
-
-// vector<double> linear_simple_example_model_4r::calc_usage(double ap, double bp, double aq,
-//                                                           double bq, double apnq, double bpnq,
-//                                                           int k) {
-//   double alpha = ALPHA;
-//   double overlapping_latency = latency(apnq, bpnq, k);
-//   double a = aq - apnq;
-//   double b = bq - bpnq + overlapping_latency;
-//   double c = ap - apnq;
-//   double d = bp - bpnq + overlapping_latency;
-//   double aa = alpha * a;
-//   double k2 = k * k;
-//   double k4 = k2 * k2;
-//   double aak4 = k4 * aa;
-
-//   double A = -c;
-//   double B = aa * k;
-//   double C = -4 * aa * k2;
-//   double D = 6 * aa * k2 * k;
-//   double E = -(d + 4 * aak4);
-//   double F = aak4 * k + alpha * k * b;
-
-//   double coef[6] = {F, E, D, C, B, A};
-//   double z[10];
-//   gsl_poly_complex_workspace* w = gsl_poly_complex_workspace_alloc(6);
-//   if (w == nullptr) {
-//     cerr << "HOLY SH*T THE HOUSE IS ON FIRE" << endl;
-//     cerr << "complex workspace could not be created" << endl;
-//     exit(1);
-//   }
-//   gsl_poly_complex_solve(coef, 6, w, z);
-//   gsl_poly_complex_workspace_free(w);
-
-//   vector<double> in_bounds;
-//   for (int i = 0; i < 5; i++) {
-//     if (z[2 * i + 1] == 0.0f) {
-//       double x = z[2 * i];
-//       if (0 <= x && x <= k)
-//         in_bounds.push_back(x);
-//       else if (x > k)
-//         in_bounds.push_back(k);
-//       else if (x < 0)
-//         in_bounds.push_back(0);
-//     }
-//   }
-
-//   if (in_bounds.size() > 1)
-//     cerr << "num_solutions for grade 5 polynomial > 1";
-//   if (in_bounds.empty()) {
-//     cerr << "HOLY SH*T THE HOUSE IS ON FIRE" << endl;
-//     cerr << "could not determine in-bound score for a pareto route (using pow5 poly method)"
-//          << endl;
-//     return {0.0f};
-//   }
-//   return in_bounds;
-// }
-
-// double linear_simple_example_model_4r::latency(double a, double b, double x) {
-//   return a * pow(x, 4) + b;
-// }
-
-// double linear_simple_example_model_4r::a(link& l) {
-//   return (0.15f * l.length) / (l.freespeed * pow(l.capacity, 4));
-// }
-// double linear_simple_example_model_4r::b(link& l) { return l.length / l.freespeed; }
 
 vector<double> user_equilibrium_2r::calc_usage(double a_p, double b_p, double a_q, double b_q,
                                                double apnq, double bpnq, int k) {
@@ -248,156 +183,6 @@ vector<double> user_equilibrium_2r::calc_usage(double a_p, double b_p, double a_
   return in_bounds;
 }
 
-// bool user_equilibrium_2r::strongly_dominating(shared_ptr<ParetoElement> par1,
-//                                               shared_ptr<ParetoElement> par2) {
-//   return par1->b() - par1->shared_b() <= par2->b() - par2->shared_b() &&
-//          par1->taud() - par1->shared_taud() <= par2->taud() - par2->shared_taud() &&
-//          par1->shared_a() <= par2->shared_a() && par1->shared_b() <= par2->shared_b();
-// }
-
-vector<double> augmented_linear_example_model_2r::calc_usage(double ap, double bp, double aq, double bq,
-                                                  double apnq, double bpnq, int k) {
-  (void) bpnq;  
-  double alpha = ALPHA;
-  double c = ap - apnq;
-  double A = -c;
-  double B = (alpha * k * aq - apnq) / A;
-  double C = -(bp + apnq * k*k + alpha * k*k * aq * 2) / A;
-  double D = alpha * k * (bq + k*k * aq) / A;
-  double x0, x1, x2;
-  gsl_poly_solve_cubic(B, C, D, &x0, &x1, &x2);
-  vector<double> in_bounds;
-  if (0 <= x0 && x0 <= k)
-    in_bounds.push_back(x0);
-  else if (x0 > k)
-    in_bounds.push_back(k);
-  else if (x0 < 0)
-    in_bounds.push_back(0);
-  if (0 <= x1 && x1 <= k)
-    in_bounds.push_back(x1);
-  else if (x1 > k)
-    in_bounds.push_back(k);
-  else if (x1 < 0)
-    in_bounds.push_back(0);
-  if (0 <= x2 && x2 <= k)
-    in_bounds.push_back(x2);
-  else if (x2 > k)
-    in_bounds.push_back(k);
-  else if (x2 < 0)
-    in_bounds.push_back(0);
-  if (in_bounds.empty()) {
-    cerr << "HOLY SH*T THE HOUSE IS ON FIRE" << endl;
-    cerr << "could not determine in-bound score for a pareto route" << endl;
-    return {0.0f};
-  }
-  return in_bounds;
-}
-
-// bool augmented_linear_example_model_2r::strongly_dominating(shared_ptr<ParetoElement> par1,
-//                                             shared_ptr<ParetoElement> par2) {
-//   (void) par1;
-//   (void) par2;
-//   return true; //TODO
-//   }
-
-  // vector<double> augmented_linear_example_model_4r::calc_usage(double ap, double bp, double aq,
-  //                                                              double bq, double apnq, double
-  //                                                              bpnq, int k) {
-  //   double alpha = ALPHA;
-  //   double c = ap - apnq;
-  //   double d = bp - bpnq;
-  //   double k2 = k * k;
-  //   double A = -c;
-  //   double B = alpha * k * aq;
-  //   double C = -4 * alpha * k2 * aq;
-  //   double D = alpha * k2 * k * aq * 6;
-  //   double E = -(4 * alpha * k2 * k2 * aq + d + apnq * k2 * k2 + bpnq);
-  //   double F = (alpha * k2 * k2 * k * aq + alpha * k * bq);
-
-  //   double coef[6] = {F, E, D, C, B, A};
-  //   double z[10];
-  //   gsl_poly_complex_workspace* w = gsl_poly_complex_workspace_alloc(6);
-  //   if (w == nullptr) {
-  //     cerr << "HOLY SH*T THE HOUSE IS ON FIRE" << endl;
-  //     cerr << "complex workspace could not be created" << endl;
-  //     exit(1);
-  //   }
-  //   gsl_poly_complex_solve(coef, 6, w, z);
-  //   gsl_poly_complex_workspace_free(w);
-
-  //   vector<double> in_bounds;
-  //   for (int i = 0; i < 5; i++) {
-  //     if (z[2 * i + 1] == 0.0f) {
-  //       double x = z[2 * i];
-  //       if (0 <= x && x <= k)
-  //         in_bounds.push_back(x);
-  //       else if (x > k)
-  //         in_bounds.push_back(k);
-  //       else if (x < 0)
-  //         in_bounds.push_back(0);
-  //     }
-  //   }
-
-  //   if (in_bounds.size() > 1)
-  //     cerr << "num_solutions for grade 5 polynomial > 1";
-  //   if (in_bounds.empty()) {
-  //     cerr << "HOLY SH*T THE HOUSE IS ON FIRE" << endl;
-  //     cerr << "could not determine in-bound score for a pareto route (using pow5 poly method)"
-  //          << endl;
-  //     return {0.0f};
-  //   }
-  //   return in_bounds;
-  // }
-
-  // vector<double> user_equilibrium_4r::calc_usage(double a_p, double b_p, double a_q, double b_q,
-  //                                                double apnq, double bpnq, int k) {
-  //   double overlapping_latency = latency(apnq, bpnq, k);
-  //   double aq = a_q - apnq;
-  //   double bq = b_q - bpnq + overlapping_latency;
-  //   double ap = a_p - apnq;
-  //   double bp = b_p - bpnq + overlapping_latency;
-  //   double k2 = k * k;
-  //   double A = ap - aq;
-  //   double B = 4 * aq * k;
-  //   double C = -6 * aq * k2;
-  //   double D = 4 * aq * k * k2;
-  //   double E = bp - bq - aq * k2 * k2;
-
-  //   double coef[5] = {E, D, C, B, A};
-  //   double z[8];
-  //   gsl_poly_complex_workspace* w = gsl_poly_complex_workspace_alloc(5);
-  //   if (w == nullptr) {
-  //     cerr << "HOLY SH*T THE HOUSE IS ON FIRE" << endl;
-  //     cerr << "complex workspace could not be created" << endl;
-  //     exit(1);
-  //   }
-  //   gsl_poly_complex_solve(coef, 5, w, z);
-  //   gsl_poly_complex_workspace_free(w);
-
-  //   vector<double> in_bounds;
-  //   for (int i = 0; i < 4; i++) {
-  //     if (z[2 * i + 1] == 0.0f) {
-  //       double x = z[2 * i];
-  //       if (0 <= x && x <= k)
-  //         in_bounds.push_back(x);
-  //       else if (x > k)
-  //         in_bounds.push_back(k);
-  //       else if (x < 0)
-  //         in_bounds.push_back(0);
-  //     }
-  //   }
-
-  //   if (in_bounds.size() > 1)
-  //     cerr << "num_solutions for grade 5 polynomial > 1";
-  //   if (in_bounds.empty()) {
-  //     cerr << "HOLY SH*T THE HOUSE IS ON FIRE" << endl;
-  //     cerr << "could not determine in-bound score for a pareto route (using pow5 poly method)"
-  //          << endl;
-  //     return {0.0f};
-  //   }
-  //   return in_bounds;
-  // }
-
   vector<double> system_optimum_2r::calc_usage(double ap, double bp, double aq, double bq,
                                                double apnq, double bpnq, int k) {
     double qa = aq - apnq;
@@ -418,15 +203,9 @@ vector<double> augmented_linear_example_model_2r::calc_usage(double ap, double b
   if (0 <= x1 && x1 <= k)
     in_bounds.push_back(x1);
   if (in_bounds.empty()) {
-    cerr << "HOLY SH*T THE HOUSE IS ON FIRE" << endl;
+    cerr << "WARNING!" << endl;
     cerr << "could not determine in-bound score for a pareto route" << endl;
     return {0.0f};
   }
   return in_bounds;
 }
-
-// bool system_optimum_2r::strongly_dominating(shared_ptr<ParetoElement> par1,
-//                                             shared_ptr<ParetoElement> par2) {
-//   return par1->taud() <= par2->taud() && par1->b() <= par2->b() &&
-//          par1->shared_a() <= par2->shared_a();
-// }
