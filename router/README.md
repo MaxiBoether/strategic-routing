@@ -68,7 +68,7 @@ Furthermore, you can specify `SANITIZE=thread` or `SANITIZE=address` to either i
 
 When specifying TYPE=RELEASE, all of these flags are omitted and `-Ofast` is added instead.
 
-To select the used psychological model, you can use the PSYCHMOD variable. We default to user_equilibrium_2r.
+To select the used psychological model, you can use the PSYCHMOD variable. We default to user_equilibrium_2r. Other options are linear_simple_example_model_2r and system_optimum_2r.
 
 To select which module you are building, you can use the STRATEGY variable. We default to SSOTD fulldisjoint. Possible strategies are:
 - sstod. In this case, you can also specify SSOTD_VARIANT, which can either be
