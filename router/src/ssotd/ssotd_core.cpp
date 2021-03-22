@@ -123,13 +123,6 @@ bool can_ignore(shared_ptr<ParetoElement> par, link* l) {
   return par->myLink && par->myLink->from == l->to;
 }
 
-double min_score(int u, int to, shared_ptr<ParetoElement> par, int k) {
-  auto [a, b] = get_lazy_airval(u, to);
-  a += par->a();
-  b += par->b();
-  return psychological_model.score_route(a, b, orig_path->a(), orig_path->b(), par->shared_a(), par->shared_b(), k).second;
-}
-
 pair<double, ll> pareto_dijkstra_local_opt(int a, int from, int to, vector<vector<shared_ptr<ParetoElement>>>& pareto,
                                shared_ptr<route> original_route, int k, double qot,
                                unordered_map<int, bool> inactive,

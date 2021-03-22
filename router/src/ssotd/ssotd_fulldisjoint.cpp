@@ -74,7 +74,7 @@ pair<shared_ptr<route>, double> ssotd_route(int a, int b, shared_ptr<route> orig
   cout << "Sum Pareto-set size: " << pareto[b].size() << endl;
     
 
-  auto start = chrono::steady_clock::now();
+  start = chrono::steady_clock::now();
   
   pair<double, int> score, best_score = {HUGE_VAL, 0};
   auto best_elem = pareto[b].begin();
@@ -85,7 +85,7 @@ pair<shared_ptr<route>, double> ssotd_route(int a, int b, shared_ptr<route> orig
       best_elem = current_elem;
     }
   }
-    auto end = chrono::steady_clock::now();
+    end = chrono::steady_clock::now();
     cout << "Evaluation time: "
          << chrono::duration_cast<chrono::microseconds>(end - start).count() << endl;
 

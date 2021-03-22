@@ -231,7 +231,7 @@ pair<shared_ptr<route>, double> ssotd_route(int a, int b, shared_ptr<route> orig
   };
  
   long long visits = 0;
-  auto start = chrono::steady_clock::now();
+  start = chrono::steady_clock::now();
 #pragma omp parallel for default(none) shared(paretoFronts, original_route, adj, inactive, upperBound, k, \
                                               b, pareto_dijk, visits) schedule(dynamic, 2) num_threads(8)
   for (unsigned int lid = 0; lid < original_route->links.size(); lid++) {
@@ -250,7 +250,7 @@ pair<shared_ptr<route>, double> ssotd_route(int a, int b, shared_ptr<route> orig
     }
     paretoFronts[{lid, original_route->links.size()}] = pareto[original_route->links.back()->to];
   }
-  auto end = chrono::steady_clock::now();
+  end = chrono::steady_clock::now();
   cout << "Node visits: " << visits << endl;
   cout << "Pareto-dijkstra time: " << chrono::duration_cast<chrono::microseconds>(end - start).count() << endl;
 
