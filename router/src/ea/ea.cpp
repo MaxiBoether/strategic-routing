@@ -30,6 +30,7 @@ using json = nlohmann::json;
 
 int queue_size;
 Scorer* scorer;
+int number_agents;
 
 void handle_mutations(std::vector<island>& islands, int k, int origin, int destination,
                       int iteration, json& iteration_json) {
@@ -166,6 +167,7 @@ void do_routing(int argc, char* argv[]) {
 
   // do EA for each OD-time-triple
   for (auto& [sdts, pv] : c) {
+    number_agents = pv.size();
     do_ea(sdts.first.first, sdts.first.second, pv);
   }
 
