@@ -2,28 +2,29 @@
 ## Description
 This C++ project offers a framework for research projects regarding (strategic)
 routing algorithms. It is the result of our work on our ATMOS paper (doi:
-10.4230/OASIcs.ATMOS.2020.10) as well as several bachelor theses at the chair
-for Algorithm Engineering at the Hasso Plattner Insitute in Potsdam. For the
-remainder of this readme, we assume familiarity with the ATMOS paper.
+10.4230/OASIcs.ATMOS.2020.10), our GECCO paper (doi: 10.1145/3449639.3459307)
+as well as several bachelor theses at the chair for Algorithm Engineering at
+the Hasso Plattner Insitute in Potsdam. For the remainder of this readme,
+we assume familiarity with the ATMOS and GECCO paper.
 
 ## Project Structure
 
 The repository contains the outer routing framework as well as the
-implementation of our algorithms solving the SAP problem. You find all
+implementation of our algorithms. You find all
 implementations in the `src` folder. The subdirectory `core` contains the core
 router framework, responsible for input/output/general datatypes. The other
 subdirectores are for each routing submodule ("strategy"). In this repository,
-you will only find the `ssotd` strategy, which solves the SAP problem.
-For example, we also implemented other evolutionary algorithms solving SAP,
-which define a different strategy. Strategies can have different variants (e.g.
-1D-SAP). Hence, if you want to solve your own routing problem within this
-framework, start with adding a new strategy.
+you will find the `ssotd` strategy, which solves the SAP problem (ATMOS paper),
+as well as the `ea` strategy, solving the Multiple Routes problem (GECCO paper)
+Strategies can have different variants (e.g. 1D-SAP); however, currently, only `ssotd` has different variants.
+Hence, if you want to solve your own routing problem within this framework,
+start with adding a new strategy.
 
 All used libraries are found in `lib`. After compiling the project, you can find
 the results in `build`. All header files should be in `include`.
 
 Please note that due to historic reasons, the naming of problems/algorithms in
-the sourcecode differs to the naming in the paper. `SSOTD` maps to the `SAP`
+the sourcecode differs to the naming in the ATMOS paper. `SSOTD` maps to the `SAP`
 problem in general. The `fulldisjoint` variant maps to `D-SAP`, the
 `newnodisjoint` variant maps to `SAP`, and the `newonedisjoint` variant maps to
 `1D-SAP`. If the `new` prefix on the variants is missing, that indicates the
@@ -66,15 +67,14 @@ You can build the project using `make` in the project root. By default, we use s
 
 Furthermore, you can specify `SANITIZE=thread` or `SANITIZE=address` to either include the thread or address sanitizer in your build (default is address). When specifying `TYPE=DEBUG`, in addition to the flags above, the `-O0` flag is added. Without `TYPE=DEBUG`, we use `-O2 -D_FORTIFY_SOURCE=2` instead.
 
-When specifying TYPE=RELEASE, all of these flags are omitted and `-Ofast` is added instead.
+When specifying `TYPE=RELEASE`, all of these flags are omitted and `-Ofast` is added instead.
 
-To select the used psychological model, you can use the PSYCHMOD variable. We default to user_equilibrium_2r. Other options are linear_simple_example_model_2r and system_optimum_2r.
+To select the used psychological model, you can use the PSYCHMOD variable. We default to user_equilibrium_2r. Other options are linear_simple_example_model_2r and system_optimum_2r. Note that the Multiple Routes EA is **only** compatible with user_equilibrium_2r and using any other model can lead to undefined behavior in the Frank-Wolfe implementation.
 
 To select which module you are building, you can use the STRATEGY variable. We default to SSOTD fulldisjoint. Possible strategies are:
-- sstod. In this case, you can also specify SSOTD_VARIANT, which can either be
+- `sstod`. In this case, you can also specify SSOTD_VARIANT, which can either be
   onedisjoint, nodisjoint, newonedisjoint, newnodisjoint or fulldisjoint, which is our default.
-- The other strategies we worked on are not (yet) published, so we do not
-  include them for now.
+- `ea`. The EA is parametrized using environment variables (sorry). You can find all variables in `src/e/ea_io.cpp` or by running the binary (it will tell you the default settings and how to modify them).
 
 You can also add more strategies just by creating more subfolders in src. Please
 remember to put your headers in include, as this is added to the include path.
@@ -166,4 +166,4 @@ distribution.
 ### Project License
 
 This soure code is licensed under GNU General Public License v3 (GPL-3) (see
-`LICENSE.md`).
+`LICENSE` file).

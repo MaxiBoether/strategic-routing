@@ -1,7 +1,7 @@
 ifeq ($(TYPE),RELEASE)
 CPPFLAGS+=-Ofast
 else
-CPPFLAGS+=-Ofast
+CPPFLAGS+=-g -fstack-protector-strong -fstack-clash-protection -fcf-protection -Wall -Wpedantic -Wextra -std=c++2a -D_GLIBCXX_ASSERTIONS 
 ifeq ($(SANITIZE),THREAD)
 CPPFLAGS+=-fsanitize=thread
 else
