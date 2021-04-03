@@ -35,6 +35,7 @@ public:
     double b() const;
     route() = default;
     double length();
+    double latency(double x);
     void calculate_params();
     route operator+(const route& b);
     explicit route(route& source, link* l);

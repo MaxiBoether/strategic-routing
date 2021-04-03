@@ -99,6 +99,13 @@ void route::calculate_params() {
                        [](double su, link* l) { return su + l->b(); });
 }
 
+double route::latency(double x) {
+  double latency = 0;
+  for (link* l : links)
+    latency += l->latency(x);
+  return latency;
+}
+
 route::route(route& source, link* l) {
   _a = source.a() + l->a();
   _b = source.b() + l->b();
